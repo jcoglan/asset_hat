@@ -255,6 +255,25 @@ class AssetHatTest < ActiveSupport::TestCase
         input = 'foo(); // bar'
         assert_equal 'foo();', AssetHat::JS.minify(input, :engine => :jsmin)
       end
+      
+      should 'minify using Packr' do
+        input   = 'foo(); // bar'
+        sources = [['qux.js', input]]
+        output  = AssetHat::JS.minify(input, :engine => :packr, :sources => sources, :output_file => 'compressed.js')
+        
+        assert_equal "foo();\n//@ sourceMappingURL=compressed.js.map", output
+        
+        assert_equal <<JSON.strip, output.source_map.to_s
+{
+  "version": 3,
+  "file": "compressed.js",
+  "sourceRoot": "",
+  "sources": ["qux.js"],
+  "names": [],
+  "mappings": "AAAA;"
+}
+JSON
+      end
     end # context 'with minifying'
   end # context 'AssetHat::JS'
 

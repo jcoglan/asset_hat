@@ -6,7 +6,7 @@ module AssetHat
   module JS
     # A list of supported minification
     # <a href=JS/Engines.html>engine</a> names.
-    ENGINES = [:weak, :jsmin]
+    ENGINES = [:weak, :jsmin, :packr]
 
     # A list of supported
     # <a href=JS/Vendors.html>3rd-party JavaScript plugin/vendor</a> names.
@@ -36,7 +36,7 @@ module AssetHat
         }.strip.gsub(/\s+/, ' ') and return
       end
 
-      AssetHat::JS::Engines.send(engine, input_string).strip
+      AssetHat::JS::Engines.send(engine, input_string, options)
     end
 
     # Swappable JavaScript minification engines.
@@ -45,7 +45,7 @@ module AssetHat
       # - Skips leading/trailing whitespace for each line, excluding line
       #   breaks; and
       # - Removes one-line comments that had no actual code on that line.
-      def self.weak(input_string)
+      def self.weak(input_string, options = {})
         input   = StringIO.new(input_string)
         output  = StringIO.new
 
@@ -67,7 +67,7 @@ module AssetHat
         end
 
         output.rewind
-        output.read
+        output.read.strip
       end
 
       # JavaScript minification engine that simply uses the JSMin gem, a Ruby
@@ -76,8 +76,20 @@ module AssetHat
       # Sources:
       # - http://github.com/rgrove/jsmin
       # - http://rubygems.org/gems/jsmin
-      def self.jsmin(input_string)
-        JSMin.minify(input_string + "\n")
+      def self.jsmin(input_string, options = {})
+        JSMin.minify(input_string + "\n").strip
+      end
+      
+      # Dean Edwards' Packer engine, using --shrink-vars
+      def self.packr(input_string, options = {})
+        packer_options = {:shrink_vars => true}
+        
+        if sources = options[:sources]
+          packer_options[:output_file] = options[:output_file]
+          input_string = sources.map { |tuple| {:code => tuple[1], :source => tuple[0]} }
+        end
+        
+        Packr.pack(input_string, packer_options)
       end
     end # module Engines
 

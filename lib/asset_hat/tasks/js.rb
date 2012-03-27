@@ -19,12 +19,23 @@ namespace :asset_hat do
         raise "#{args.filepath} is already minified." and return
       end
 
-      input   = File.open(args.filepath, 'r').read
-      output  = AssetHat::JS.minify(input, min_options)
+      target_filepath = AssetHat::JS.min_filepath(args.filepath)
+      input = File.open(args.filepath, 'r').read
+      
+      if min_options[:engine] == 'packr'
+        # TODO require 'packr'
+        source_path = Packr::FileSystem.relative_path(args.filepath, target_filepath)
+        min_options[:sources] = [[source_path, input]]
+        min_options[:output_file] = target_filepath
+      end
+      
+      output = AssetHat::JS.minify(input, min_options)
 
       # Write minified content to file
-      target_filepath = AssetHat::JS.min_filepath(args.filepath)
       File.open(target_filepath, 'w') { |f| f.write output }
+      if output.respond_to?(:source_map)
+        File.open(output.source_map.filename, 'w') { |f| f.write output.source_map.to_s }
+      end
 
       # Print results
       puts "- Minified to #{target_filepath}" if verbose
@@ -69,17 +80,25 @@ namespace :asset_hat do
       output = ''
       old_bundle_size = 0.0
       new_bundle_size = 0.0
+      sources = []
       filepaths.each do |filepath|
         file_output = File.open(filepath, 'r').read
-        old_bundle_size += file_output.size
-        unless filepath =~ /\.min\.#{type}$/ # Already minified
-          file_output = AssetHat::JS.minify(file_output, min_options)
+        if min_options[:engine] == 'packr'
+          # TODO require 'packr'
+          source_path = Packr::FileSystem.relative_path(filepath, bundle_filepath)
+          sources << [source_path, file_output + "\n"]
         end
-        new_bundle_size += file_output.size
+        old_bundle_size += file_output.size
         output << file_output + "\n"
       end
+      min_options.update(:sources => sources, :output_file => bundle_filepath)
+      output = AssetHat::JS.minify(output, min_options)
+      new_bundle_size = output.size
       FileUtils.makedirs(File.dirname(bundle_filepath))
       File.open(bundle_filepath, 'w') { |f| f.write output }
+      if output.respond_to?(:source_map)
+        File.open(output.source_map.filename, 'w') { |f| f.write output.source_map.to_s }
+      end
 
       # Print results
       percent_saved =
