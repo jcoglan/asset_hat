@@ -1,3 +1,0 @@
-[submodule "vendor/packr"]
-	path = vendor/packr
-	url = git://github.com/jcoglan/packr.git

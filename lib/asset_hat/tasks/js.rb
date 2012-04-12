@@ -23,7 +23,7 @@ namespace :asset_hat do
       input = File.open(args.filepath, 'r').read
       
       if min_options[:engine] == 'packr'
-        # TODO require 'packr'
+        require 'packr' unless defined?(Packr)
         source_path = Packr::FileSystem.relative_path(args.filepath, target_filepath)
         min_options[:sources] = [[source_path, input]]
         min_options[:output_file] = target_filepath
@@ -84,7 +84,7 @@ namespace :asset_hat do
       filepaths.each do |filepath|
         file_output = File.open(filepath, 'r').read
         if min_options[:engine] == 'packr'
-          # TODO require 'packr'
+          require 'packr' unless defined?(Packr)
           source_path = Packr::FileSystem.relative_path(filepath, bundle_filepath)
           sources << [source_path, file_output + "\n"]
         end

@@ -3,7 +3,6 @@ require 'test/unit'
 require 'active_support'
 require 'action_controller'
 require 'action_view/test_case'
-require 'packr'
 
 require 'shoulda'
 require 'flexmock/test_unit'

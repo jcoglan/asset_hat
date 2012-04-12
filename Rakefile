@@ -27,6 +27,7 @@ begin
     gemspec.add_development_dependency  'shoulda',    '~> 2.10.2'
     gemspec.add_development_dependency  'actionpack', '~> 3.0.0'
     gemspec.add_development_dependency  'test-unit',  '~> 2.0.0'
+    gemspec.add_development_dependency  'packr',      '~> 3.2.0'
     gemspec.add_runtime_dependency      'cssmin',     '~> 1.0.2'
     gemspec.add_runtime_dependency      'jsmin',      '~> 1.0.1'
   end

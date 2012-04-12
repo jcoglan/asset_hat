@@ -82,6 +82,7 @@ module AssetHat
       
       # Dean Edwards' Packer engine, using --shrink-vars
       def self.packr(input_string, options = {})
+        require 'packr' unless defined?(Packr)
         packer_options = {:shrink_vars => true}
         
         if sources = options[:sources]
